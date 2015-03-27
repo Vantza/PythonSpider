@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
+#!/usr/bin/python
 import urllib2
 import urllib
 import re
-import thread
+import utfgbk
 import time
 import json
 
@@ -55,29 +55,45 @@ class Spider_Model:
         req = urllib2.Request(self.myUrl)
         #伪装成浏览器访问
         req.add_header('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
-        req.add_header('X-Requested-With','XMLHttpRequest')
+        #req.add_header('X-Requested-With','XMLHttpRequest')
         req.add_header('User-Agent','Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116')
  
         params = urllib.urlencode(self.data)
         #print(params)
-        response = urllib2.urlopen(req, params)
-        jsonText = response.read()
-        #使原编码改为utf-8编码（中文太恶心了）
-        unicodePage = jsonText.decode("utf-8")
-        return unicodePage
+        try:
+            response = urllib2.urlopen(req, params)
+            jsonText = response.read()
+            #使原编码改为utf-8编码（中文太恶心了）
+            unicodePage = jsonText.decode("utf-8")
+            return unicodePage
+        except urllib2.HTTPError, e:
+            print u'ServerError!'
+        except urllib2.URLError, e:
+            print u'failed to reach a server.'
+        else:
+            print u'No exception was raised'
+        
+        
+        
+        
 
     #解析Json文件
     def parseJson(self,jsonText):
-        j = json.loads(jsonText)
-        page = j["results_html"]
-        #print(page)
-        return page
+        try:
+            j = json.loads(jsonText)
+            page = j["results_html"]
+            #print(page)
+            return page
+        except TypeError,e:
+            print u''
 
     def start(self):
         self.enable = True
         while self.enable:
-            
-            self.getLastOn(self.parseJson(self.request_ajax_data()))
+            try:
+                self.getLastOn(self.parseJson(self.request_ajax_data()))
+            except TypeError,e:
+                print u""
             print('========================^_^============================')
 
             myInput = raw_input()
@@ -94,7 +110,7 @@ print u'''
     
 语言：Pythom 2.7
     
-版本：1.0
+版本：1.1
     
 作者：Cy
     
